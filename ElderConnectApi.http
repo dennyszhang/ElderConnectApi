@@ -1,0 +1,6 @@
+@ElderConnectApi_HostAddress = http://localhost:5226
+
+GET {{ElderConnectApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
