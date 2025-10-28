@@ -12,13 +12,13 @@ public class Nurse : BaseEntity
     public string Email { get; set; } = null!;
     public Gender Gender { get; set; }
     public string PhoneNumber { get; set; } = null!;
-    public string? GraduatedFrom { get; set; } = null!;
-    public string? LicenseNumber { get; set; } = null!;
-    public string? ProfileImageUrl { get; set; } = null!;
-    public NurseAddress? Address { get; set; } = null!;
+    public string? GraduatedFrom { get; set; }
+    public string? LicenseNumber { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public NurseAddress? Address { get; set; }
     public NurseSchedule[] Schedules { get; set; } = [];
-    public List<Booking> Bookings { get; set; } = [];
-    public List<NurseLeave> Leaves { get; set; } = [];
+    public IQueryable<Booking> Bookings { get; set; } = Enumerable.Empty<Booking>().AsQueryable();
+    public IQueryable<NurseLeave> Leaves { get; set; } = Enumerable.Empty<NurseLeave>().AsQueryable();
 }
 
 public class NurseSchedule : BaseEntity

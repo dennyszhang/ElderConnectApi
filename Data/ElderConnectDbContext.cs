@@ -343,6 +343,8 @@ public class ElderConnectDbContext(DbContextOptions<ElderConnectDbContext> optio
             b.HasIndex(e => e.PatientId, "ix_booking_patient_id");
             b.HasIndex(e => e.UserId, "ix_booking_user_id");
             b.HasIndex(e => e.AddressId, "ix_booking_address_id");
+            b.HasIndex(e => e.StartTime, "ix_booking_start_time");
+            b.HasIndex(e => e.EndTime, "ix_booking_end_time");
         });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

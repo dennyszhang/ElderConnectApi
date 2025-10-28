@@ -13,7 +13,7 @@ public class User : BaseEntity
     public UserAccountStatus AccountStatus { get; set; }
     public DateTimeOffset JoinDate { get; set; }
 
-    public List<UserAddress> Addresses { get; set; } = [];
-    public List<Patient> Patients { get; set; } = [];
-    public List<Booking> Bookings { get; set; } = [];
+    public IQueryable<UserAddress> Addresses { get; set; } = Enumerable.Empty<UserAddress>().AsQueryable();
+    public IQueryable<Patient> Patients { get; set; } = Enumerable.Empty<Patient>().AsQueryable();
+    public IQueryable<Booking> Bookings { get; set; } = Enumerable.Empty<Booking>().AsQueryable();
 }
