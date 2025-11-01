@@ -1,4 +1,5 @@
 using ElderConnectApi.Data.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace ElderConnectApi.Data.Entities;
 
@@ -37,4 +38,14 @@ public class NurseLeave : BaseEntity
     public DateOnly LeaveDate { get; set; }
     public string Reason { get; set; } = null!;
     public Nurse? Nurse { get; set; }
+}
+
+public static class NurseLeaveExtensions
+{
+    public static Task<bool> HasOverlappingTimeRange(this IQueryable<NurseLeave> query, Guid nurseId, DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        return query.Where(l =>
+            (l.NurseId == nurseId) && (l.LeaveDate < DateOnly.FromDateTime(endTime.DateTime)) && (l.LeaveDate > DateOnly.FromDateTime(startTime.DateTime))
+        ).AnyAsync();
+    }
 }

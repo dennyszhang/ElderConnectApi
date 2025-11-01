@@ -80,11 +80,19 @@ public class NurseController(ElderConnectDbContext dbContext) : ControllerBase
             return NotFound($"Nurse with ID {nurseId} not found.");
         }
 
-        var hasBookings = await dbContext.Nurses
-            .Where(n => n.NurseId == nurseId)
+        DateTimeOffset startUtc = start.ToUniversalTime();
+        DateTimeOffset endUtc = end.ToUniversalTime();
+
+        if (endUtc <= startUtc)
+        {
+            return BadRequest("End time must be after start time.");
+        }
+
+        var hasConflictingBookings = await dbContext.Bookings
+            .Where(b => b.StartTime < endUtc && b.EndTime > startUtc)
             .AnyAsync();
 
-        if (hasBookings)
+        if (hasConflictingBookings)
         {
             return Ok();
         }
@@ -92,5 +100,45 @@ public class NurseController(ElderConnectDbContext dbContext) : ControllerBase
         {
             return NoContent();
         }
+    }
+
+
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpGet("{nurseId:guid}/unavailable-dates")]
+    public async Task<ActionResult> GetUnavailableDates(Guid nurseId)
+    {
+        var nurseExists = await dbContext.Nurses.AnyAsync(n => n.NurseId == nurseId);
+        if (!nurseExists)
+        {
+            return NotFound($"Nurse with ID {nurseId} not found.");
+        }
+
+        var dateRangeList = await dbContext.Bookings
+            .Where(b => b.NurseId == nurseId && b.StartTime > DateTimeOffset.UtcNow)
+            .Select(b => new
+            {
+                StartTime = DateOnly.FromDateTime(b.StartTime.DateTime),
+                EndTime = DateOnly.FromDateTime(b.EndTime.DateTime)
+            })
+            .ToListAsync();
+        var booked = dateRangeList.SelectMany(b =>
+        {
+            var dates = new List<DateOnly>();
+            for (var date = b.StartTime; date <= b.EndTime; date = date.AddDays(1))
+            {
+                dates.Add(date);
+            }
+            return dates;
+        });
+        var futureLeaves = await dbContext.NurseLeaves
+            .Where(l => l.NurseId == nurseId && l.LeaveDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .Select(l => l.LeaveDate)
+            .ToListAsync();
+
+        return Ok(new NurseUnavailableDatesResponseDto
+        {
+            UnavailableDates = Enumerable.Concat(booked, futureLeaves)
+        });
     }
 }

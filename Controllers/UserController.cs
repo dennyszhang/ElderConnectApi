@@ -434,6 +434,8 @@ public class UserController(ElderConnectDbContext dbContext) : ControllerBase
             dbContext.Patients.AnyAsync(p => p.PatientId == requestDto.PatientId && p.UserId == userId),
             dbContext.Addresses.AnyAsync(a => a.AddressId == requestDto.AddressId && a.UserId == userId),
             dbContext.Nurses.AnyAsync(n => n.NurseId == requestDto.NurseId),
+            dbContext.Bookings.HasOverlappingTimeRange(requestDto.NurseId, requestDto.StartTime, requestDto.EndTime),
+            dbContext.NurseLeaves.HasOverlappingTimeRange(requestDto.NurseId, requestDto.StartTime, requestDto.EndTime)
         ]);
 
         var validationResult = await validationTask;
@@ -452,6 +454,14 @@ public class UserController(ElderConnectDbContext dbContext) : ControllerBase
         if (!validationResult[3])
         {
             return NotFound($"Nurse with ID {requestDto.NurseId} not found.");
+        }
+        if (validationResult[4])
+        {
+            return BadRequest("The selected nurse has conflicting bookings in the specified time range.");
+        }
+        if (validationResult[5])
+        {
+            return BadRequest("The selected nurse is on leave during the specified time range.");
         }
 
         var newBooking = new Booking

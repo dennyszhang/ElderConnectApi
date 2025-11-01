@@ -1,6 +1,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 using ElderConnectApi.Data.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace ElderConnectApi.Data.Entities;
 
@@ -42,6 +43,16 @@ public class Booking : BaseEntity
     [Column(TypeName = "jsonb")]
     public string? AddressSnapshot { get; set; }
 
+}
+
+public static class BookingExtensions
+{
+    public static Task<bool> HasOverlappingTimeRange(this IQueryable<Booking> query, Guid nurseId, DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        return query.Where(b =>
+            (b.NurseId == nurseId) && (b.StartTime < endTime) && (b.EndTime > startTime)
+        ).AnyAsync();
+    }
 }
 
 // Complex Type for Booking Timeline JSON Mapping

@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
 using ElderConnectApi.Data.Common;
-using ElderConnectApi.Data.Entities;
 
 namespace ElderConnectApi.Controllers.Dto.Response;
 
@@ -14,4 +12,9 @@ public class NurseResponseDto
     public string? GraduatedFrom { get; set; } = null!;
     public string? LicenseNumber { get; set; } = null!;
     public string? ProfileImageUrl { get; set; } = null!;
+}
+
+public class NurseUnavailableDatesResponseDto
+{
+    public IEnumerable<DateOnly> UnavailableDates { get; set; } = [];
 }
